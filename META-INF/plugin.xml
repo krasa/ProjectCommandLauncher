@@ -1,0 +1,51 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
+        "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin version="2">
+
+    <name>ProjectCommandLauncher</name>
+    <id>ProjectCommandLauncher</id>
+    <version>0.1</version>
+
+    <description><![CDATA[
+
+            ]]>
+    </description>
+
+    <category>Editor</category>
+
+    <vendor email="vojta.krasa@gmail.com">Vojtech Krasa</vendor>
+
+    <idea-version since-build="110.000" until-build=""/>
+
+    <change-notes><![CDATA[
+
+            ]]></change-notes>
+
+
+    <actions>
+
+        <action id="RunAutotestExternal" class="krasa.RunAutotestExternal" text="RunAutotestExternal"
+                description="RunAutotestExternal">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+        <action id="RunAutotestWithDialogExternal" class="krasa.RunAutotestWithDialogExternal"
+                text="RunAutotestWithDialogExternal"
+                description="RunAutotestWithDialogExternal">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+        <action id="RunAutotestWithDialog" class="krasa.RunAutotestWithDialog" text="RunAutotestWithDialog"
+                description="RunAutotestWithDialog">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+        <action id="RunAutotest" class="krasa.RunAutotest" text="RunAutotest" description="RunAutotest">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+    </actions>
+
+    <application-components>
+        <component>
+            <implementation-class>krasa.ProjectCommandLauncherComponent</implementation-class>
+        </component>
+    </application-components>
+</idea-plugin>

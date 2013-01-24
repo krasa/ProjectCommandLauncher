@@ -16,9 +16,6 @@ public class AutotestState implements PersistentStateComponent<AutotestState> {
 
 	private LinkedList<String> history = new LinkedList<String>();
 
-	public AutotestState() {
-	}
-
 	@Nullable
 	@Override
 	public AutotestState getState() {
@@ -32,6 +29,14 @@ public class AutotestState implements PersistentStateComponent<AutotestState> {
 
 	public static AutotestState getInstance() {
 		return ServiceManager.getService(AutotestState.class);
+	}
+
+	public LinkedList<String> getHistory() {
+		return history;
+	}
+
+	public void setHistory(LinkedList<String> history) {
+		this.history = history;
 	}
 
 	public String getLast() {

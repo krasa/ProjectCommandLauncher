@@ -14,7 +14,6 @@ import com.intellij.execution.RunContentExecutor;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.ApplicationComponent;
@@ -30,7 +29,7 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 
 	public static final String CLEAN_UTIL_PORTAL = "clean, util, portal";
 	public static final Icon ICON = IconLoader.getIcon("/actions/uninstall.png");
-	private static boolean isDisplayed;
+	private static volatile boolean isDisplayed;
 
 	public void initComponent() {
 		initializeActions();
@@ -40,75 +39,56 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 		DefaultActionGroup mainToolBar = (DefaultActionGroup) ActionManager.getInstance().getAction("BuildMenu");
 		if (!isDisplayed) {
 			isDisplayed = true;
-			mainToolBar.add(new DumbAwareAction(CLEAN_UTIL_PORTAL, CLEAN_UTIL_PORTAL,
-					IconLoader.getIcon("/actions/uninstall.png")) {
-				public void actionPerformed(AnActionEvent e) {
-					try {
-						run(e, "util.bat clean", "util.bat", "portal-platform.bat", "exit");
-					} catch (ExecutionException e1) {
-						throw new RuntimeException(e1);
-					}
-				}
-			});
-			mainToolBar.add(new DumbAwareAction("payment", "payment", IconLoader.getIcon("/actions/uninstall.png")) {
-				public void actionPerformed(AnActionEvent e) {
-					try {
-						run(e, "payment.bat", "exit");
-					} catch (ExecutionException e1) {
-						throw new RuntimeException(e1);
-					}
-				}
-			});
-			mainToolBar.add(new DumbAwareAction("portal", "portal", IconLoader.getIcon("/actions/uninstall.png")) {
-				public void actionPerformed(AnActionEvent e) {
-					try {
-						run(e, "portal-platform.bat", "exit ");
-
-					} catch (ExecutionException e1) {
-						throw new RuntimeException(e1);
-					}
-				}
-			});
-			mainToolBar.add(new DumbAwareAction("all", "all", ICON) {
-				public void actionPerformed(final AnActionEvent e) {
-					try {
-						final Process process = getProcess();
-						RunContentExecutor executor = getRunContentExecutor(e.getProject(), process);
-						executor.withAfterCompletion(new Runnable() {
-							@Override
-							public void run() {
-								new AnAction("payment", "payment", IconLoader.getIcon("/actions/uninstall.png")) {
-									public void actionPerformed(AnActionEvent e) {
-										try {
-											ProjectCommandLauncherComponent.this.run(e, "payment.bat", "exit");
-										} catch (ExecutionException e1) {
-											throw new RuntimeException(e1);
-										}
-									}
-								}.actionPerformed(e);
-								new AnAction("portal", "portal", IconLoader.getIcon("/actions/uninstall.png")) {
-									public void actionPerformed(AnActionEvent e) {
-										try {
-											ProjectCommandLauncherComponent.this.run(e, "portal-platform.bat", "exit");
-
-										} catch (ExecutionException e1) {
-											throw new RuntimeException(e1);
-										}
-									}
-								}.actionPerformed(e);
-							}
-						});
-						executor.run();
-						run(e, process, "util.bat clean", "util.bat", "exit");
-					} catch (ExecutionException e1) {
-						throw new RuntimeException(e1);
-					}
-				}
-			});
+			mainToolBar.add(cleanUtilPortal());
+			mainToolBar.add(payment());
+			mainToolBar.add(portal());
+			mainToolBar.add(all());
 		}
 	}
 
-	private void run(AnActionEvent e, String... strings) throws ExecutionException {
+	private DumbAwareAction all() {
+		return new DumbAwareAction("all", "all", ICON) {
+			public void actionPerformed(final AnActionEvent e) {
+				final Process process = getProcess();
+				RunContentExecutor executor = getRunContentExecutor(e.getProject(), process);
+				executor.withAfterCompletion(new Runnable() {
+					@Override
+					public void run() {
+						payment().actionPerformed(e);
+						portal().actionPerformed(e);
+					}
+				});
+				executor.run();
+				run(e, process, "util.bat clean", "util.bat", "exit");
+			}
+		};
+	}
+
+	private DumbAwareAction portal() {
+		return new DumbAwareAction("portal", "portal", IconLoader.getIcon("/actions/uninstall.png")) {
+			public void actionPerformed(AnActionEvent e) {
+				run(e, "portal-platform.bat", "exit ");
+			}
+		};
+	}
+
+	private DumbAwareAction payment() {
+		return new DumbAwareAction("payment", "payment", IconLoader.getIcon("/actions/uninstall.png")) {
+			public void actionPerformed(AnActionEvent e) {
+				run(e, "payment.bat", "exit");
+			}
+		};
+	}
+
+	private DumbAwareAction cleanUtilPortal() {
+		return new DumbAwareAction(CLEAN_UTIL_PORTAL, CLEAN_UTIL_PORTAL, IconLoader.getIcon("/actions/uninstall.png")) {
+			public void actionPerformed(AnActionEvent e) {
+				run(e, "util.bat clean", "util.bat", "portal-platform.bat", "exit");
+			}
+		};
+	}
+
+	private void run(AnActionEvent e, String... strings) {
 		final Process process = createCmd(e.getProject());
 		run(e, process, strings);
 	}
@@ -126,21 +106,25 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 		return path.substring(0, 1) + ":";
 	}
 
-	private Process createCmd(Project project) throws ExecutionException {
+	private Process createCmd(Project project) {
 		final Process process = getProcess();
 		RunContentExecutor executor = getRunContentExecutor(project, process);
 		executor.run();
 		return process;
 	}
 
+	private Process getProcess() {
+		try {
+			GeneralCommandLine generalCommandLine = new GeneralCommandLine("cmd");
+			return generalCommandLine.createProcess();
+		} catch (ExecutionException e1) {
+			throw new RuntimeException(e1);
+		}
+	}
+
 	private RunContentExecutor getRunContentExecutor(Project project, Process process) {
 		OSProcessHandler osProcessHandler = new OSProcessHandler(process, "");
 		return new RunContentExecutor(project, osProcessHandler);
-	}
-
-	private Process getProcess() throws ExecutionException {
-		GeneralCommandLine generalCommandLine = new GeneralCommandLine("cmd");
-		return generalCommandLine.createProcess();
 	}
 
 	private void writeCommands(Process process, List<String> strings) {

@@ -1,5 +1,6 @@
 package krasa;
 
+import com.intellij.openapi.diagnostic.Logger;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +27,8 @@ import com.intellij.openapi.vfs.VirtualFile;
  */
 public class RunAutotest extends DumbAwareAction {
 
+	private static final Logger log = Logger.getInstance(RunAutotest.class);
+
 	public void actionPerformed(AnActionEvent e) {
 		runInIDEA(e, getEnvironment());
 	}
@@ -46,12 +49,12 @@ public class RunAutotest extends DumbAwareAction {
 		}
 	}
 
-	protected void runInIDEA(AnActionEvent e, String enviroment) {
+	protected void runInIDEA(final AnActionEvent e, final String enviroment) {
 		try {
 			GeneralCommandLine generalCommandLine = new GeneralCommandLine(cygwinExecutablePath(e), "--login", "-i");
 			final Process process = generalCommandLine.createProcess();
 
-			OSProcessHandler osProcessHandler = new OSProcessHandler(process, "");
+			final OSProcessHandler osProcessHandler = new OSProcessHandler(process, "");
 			osProcessHandler.addProcessListener(new ProcessAdapter() {
 				public void onTextAvailable(ProcessEvent event, Key outputType) {
 					if (event.getText().contains("Shutdown process finished")) {
@@ -59,13 +62,22 @@ public class RunAutotest extends DumbAwareAction {
 					}
 				}
 			});
-			RunContentExecutor executor = new RunContentExecutor(e.getProject(), osProcessHandler);
+			AutotestContentExecutor executor = new AutotestContentExecutor(e.getProject(), osProcessHandler);
+			executor.withRerun(new Runnable() {
+
+				@Override
+				public void run() {
+					osProcessHandler.destroyProcess();
+					osProcessHandler.waitFor(2000L);
+					runInIDEA(e, enviroment);
+				}
+			});
 			executor.run();
 
 			writeCommands(e, process, enviroment);
 
 		} catch (ExecutionException e1) {
-			e1.printStackTrace();
+			log.error(e1);
 		}
 	}
 

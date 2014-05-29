@@ -1,6 +1,5 @@
 package krasa;
 
-import com.intellij.execution.executors.DefaultRunExecutor;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.Executor;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.filters.*;
 import com.intellij.execution.process.*;
 import com.intellij.execution.ui.ConsoleView;
@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.tabs.PinToolwindowTabAction;
 
 /**
  * Runs a process and prints the output in a content tab within the Run toolwindow.
@@ -114,6 +115,7 @@ public class AutotestContentExecutor implements Disposable {
 			actions.add(action);
 		}
 		actions.add(new RerunAction(consolePanel));
+		actions.add(PinToolwindowTabAction.getPinAction());
 		actions.add(new StopAction());
 		actions.add(new CloseAction(executor, descriptor, myProject));
 

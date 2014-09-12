@@ -1,18 +1,25 @@
 package krasa.actions;
 
-import krasa.model.*;
+import krasa.model.AutotestState;
+import krasa.model.TestFile;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.application.*;
+import com.intellij.execution.application.ApplicationConfiguration;
+import com.intellij.execution.application.ApplicationConfigurationType;
 import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.runners.*;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.module.*;
-import com.intellij.openapi.project.*;
-import com.intellij.openapi.ui.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 
 /**
@@ -29,13 +36,8 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	}
 
 	protected void runWithDialog(AnActionEvent e) {
-		String[] choices = AutotestState.getInstance().getChoices();
-		String last = AutotestState.getInstance().getLast();
-		String enviroment = Messages.showEditableChooseDialog("Enviroment", "Enviroment", Messages.getQuestionIcon(),
-				choices,
-				last, new NonEmptyInputValidator());
-		if (enviroment != null) {
-			AutotestState.getInstance().addEnvironment(enviroment);
+		String environment = DialogUtils.chooseEnvironment();
+		if (environment != null) {
 			TestFile element = getTestFile(e);
 			AutotestState.getInstance().addTestFile(element);
 			runInIDEA(e.getProject(), element);

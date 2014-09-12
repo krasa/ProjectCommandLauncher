@@ -1,30 +1,26 @@
 package krasa;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.execution.ExecutionManager;
-import com.intellij.execution.Executor;
+import com.intellij.execution.*;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.filters.*;
 import com.intellij.execution.process.*;
-import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.execution.ui.*;
 import com.intellij.execution.ui.actions.CloseAction;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.DumbAware;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.project.*;
+import com.intellij.openapi.util.*;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.tabs.PinToolwindowTabAction;
 
@@ -111,12 +107,12 @@ public class AutotestContentExecutor implements Disposable {
 
 		Disposer.register(this, descriptor);
 
+		actions.add(new RerunAction(consolePanel));
+		actions.add(new StopAction());
 		for (AnAction action : view.createConsoleActions()) {
 			actions.add(action);
 		}
-		actions.add(new RerunAction(consolePanel));
 		actions.add(PinToolwindowTabAction.getPinAction());
-		actions.add(new StopAction());
 		actions.add(new CloseAction(executor, descriptor, myProject));
 
 		ExecutionManager.getInstance(myProject).getContentManager().showRunContent(executor, descriptor);

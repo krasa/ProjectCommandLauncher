@@ -1,24 +1,18 @@
 package krasa;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.RunContentExecutor;
+import com.intellij.execution.*;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.*;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -48,10 +42,12 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 
 	private DumbAwareAction all() {
 		return new DumbAwareAction("all", "all", ICON) {
+
 			public void actionPerformed(final AnActionEvent e) {
 				final Process process = getProcess();
 				RunContentExecutor executor = getRunContentExecutor(e.getProject(), process);
 				executor.withAfterCompletion(new Runnable() {
+
 					@Override
 					public void run() {
 						payment().actionPerformed(e);
@@ -66,6 +62,7 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 
 	private DumbAwareAction portal() {
 		return new DumbAwareAction("portal", "portal", IconLoader.getIcon("/actions/uninstall.png")) {
+
 			public void actionPerformed(AnActionEvent e) {
 				run(e, "portal-platform.bat", "exit ");
 			}
@@ -74,6 +71,7 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 
 	private DumbAwareAction payment() {
 		return new DumbAwareAction("payment", "payment", IconLoader.getIcon("/actions/uninstall.png")) {
+
 			public void actionPerformed(AnActionEvent e) {
 				run(e, "payment.bat", "exit");
 			}
@@ -82,6 +80,7 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 
 	private DumbAwareAction cleanUtilPortal() {
 		return new DumbAwareAction(CLEAN_UTIL_PORTAL, CLEAN_UTIL_PORTAL, IconLoader.getIcon("/actions/uninstall.png")) {
+
 			public void actionPerformed(AnActionEvent e) {
 				run(e, "util.bat clean", "util.bat", "portal-platform.bat", "exit");
 			}

@@ -23,29 +23,28 @@
 
 
 	<actions>
-
-		<action id="RunAutotestExternal" class="krasa.RunAutotestExternal" text="RunAutotestExternal"
-				description="RunAutotestExternal">
+		<action id="RunAutotestWithDialog" class="krasa.actions.RunAutotestWithDialog" text="RunAutotestWithDialog"
+			description="RunAutotestWithDialog">
 			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
 		</action>
-		<action id="RunAutotestWithDialogExternal" class="krasa.RunAutotestWithDialogExternal"
-				text="RunAutotestWithDialogExternal"
-				description="RunAutotestWithDialogExternal">
+		<action id="RunAutotest" class="krasa.actions.RunAutotest" text="RunAutotest" description="RunAutotest">
 			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
 		</action>
-
-		<action id="RunAutotestWithDialog" class="krasa.RunAutotestWithDialog" text="RunAutotestWithDialog"
-				description="RunAutotestWithDialog">
+		<action id="RunAutotestInIntelliJWithDialog" class="krasa.actions.RunAutotestInIntelliJWithDialog" text="Run Autotest In IntelliJ with Dialog" description="Run Autotest In IntelliJ with Dialog">
 			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
 		</action>
-		<action id="RunAutotest" class="krasa.RunAutotest" text="RunAutotest" description="RunAutotest">
+		<action id="RunAutotestInIntelliJ" class="krasa.actions.RunAutotestInIntelliJ" text="Run Autotest In IntelliJ" description="Run Autotest In IntelliJ">
 			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
 		</action>
 	</actions>
 
 	<extensions defaultExtensionNs="com.intellij">
-		<applicationService serviceInterface="krasa.AutotestState"
-							serviceImplementation="krasa.AutotestState"/>
+
+		<toolWindow anchor="right" icon="AllIcons.Providers.Oracle" id="Autotest"
+			factoryClass="krasa.toolwindow.AutotestToolWindowFactory" />
+
+		<applicationService serviceInterface="krasa.model.AutotestState"
+			serviceImplementation="krasa.model.AutotestState" />
 	</extensions>
 	<application-components>
 		<component>

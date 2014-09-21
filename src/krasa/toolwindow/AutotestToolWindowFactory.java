@@ -12,7 +12,6 @@ public class AutotestToolWindowFactory implements ToolWindowFactoryEx, DumbAware
 
 	@Override
 	public void init(ToolWindow window) {
-
 	}
 
 	@Override

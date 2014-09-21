@@ -1,31 +1,26 @@
 package krasa.toolwindow;
 
+import static krasa.actions.AutotestUtils.getTestFileRelativePath;
+
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.event.*;
+import java.util.*;
 
 import javax.swing.*;
 
-import krasa.actions.DialogUtils;
-import krasa.actions.RunAutotestInIntelliJ;
-import krasa.model.AutotestState;
-import krasa.model.TestFile;
+import krasa.actions.*;
+import krasa.model.*;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
+import com.intellij.notification.*;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionGroup;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.project.*;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBList;
 
@@ -36,10 +31,6 @@ public class AutotestPanel implements Disposable {
 	private JPanel root;
 	private DefaultListModel model;
 	private Project project;
-
-	public JPanel getRoot() {
-		return root;
-	}
 
 	public AutotestPanel(Project project) {
 		this.project = project;
@@ -52,6 +43,10 @@ public class AutotestPanel implements Disposable {
 			}
 		};
 		AutotestState.getInstance().addListener(settingsChangedListener);
+	}
+
+	public JPanel getRoot() {
+		return root;
 	}
 
 	private void createUIComponents() {
@@ -71,7 +66,8 @@ public class AutotestPanel implements Disposable {
 						@NotNull
 						@Override
 						public AnAction[] getChildren(@Nullable AnActionEvent e) {
-							return new AnAction[] { new RunAction(), new RunOnAction(), new DeleteAction() };
+							return new AnAction[] { new JumpToSourceAction(), new RunAction(), new RunOnAction(),
+									new DebugAction(), new DeleteAction() };
 						}
 					}).getComponent().show(comp, x, y);
 				}
@@ -96,6 +92,7 @@ public class AutotestPanel implements Disposable {
 		jbList.addMouseListener(new DoubleClickListener());
 		jbList.addKeyListener(new EnterListener());
 		jbList.addKeyListener(new DeleteListener());
+		jbList.addKeyListener(new JumpToSourceListener());
 
 		return jbList;
 	}
@@ -113,33 +110,36 @@ public class AutotestPanel implements Disposable {
 		AutotestState.getInstance().removeListener(settingsChangedListener);
 	}
 
-	private class DeleteListener extends KeyAdapter {
-
-		@Override
-		public void keyPressed(KeyEvent evt) {
-			final int keyCode = evt.getKeyCode();
-			if (keyCode == KeyEvent.VK_DELETE) {
-				delete();
+	private void jumpToSource() {
+		TestFile selectedValue = (TestFile) list.getSelectedValue();
+		if (selectedValue != null) {
+			String path = selectedValue.getPath();
+			PsiFile[] filesByName = PsiShortNamesCache.getInstance(project).getFilesByName(selectedValue.getName());
+			for (PsiFile psiFile : filesByName) {
+				if (getTestFileRelativePath(psiFile.getVirtualFile()).equals(path)) {
+					OpenFileDescriptor n = new OpenFileDescriptor(project, psiFile.getVirtualFile(), 0).setUseCurrentWindow(true);
+					if (n.canNavigate()) {
+						n.navigate(true);
+						return;
+					}
+				}
 			}
-		}
+			final Notification notification = new Notification("Autotest ERROR", "", "File not found "
+					+ selectedValue.getPath(), NotificationType.ERROR);
+			ApplicationManager.getApplication().invokeLater(new Runnable() {
 
+				@Override
+				public void run() {
+					Notifications.Bus.notify(notification, project);
+				}
+			});
+		}
 	}
 
 	private void delete() {
 		for (Object o : list.getSelectedValues()) {
 			TestFile o1 = (TestFile) o;
 			AutotestState.getInstance().removeTestFileHistory(o1);
-		}
-	}
-
-	private class EnterListener extends KeyAdapter {
-
-		@Override
-		public void keyPressed(KeyEvent evt) {
-			final int keyCode = evt.getKeyCode();
-			if (keyCode == KeyEvent.VK_ENTER) {
-				run();
-			}
 		}
 	}
 
@@ -150,19 +150,60 @@ public class AutotestPanel implements Disposable {
 		}
 	}
 
-	private class DoubleClickListener extends MouseAdapter {
-
-		public void mouseClicked(MouseEvent evt) {
-			if (evt.getClickCount() == 2) {
-				TestFile o = getTestFileAtPoint(evt.getPoint());
-				new RunAutotestInIntelliJ().runInIDEA(project, o);
-			}
+	private void debug() {
+		for (Object o : list.getSelectedValues()) {
+			TestFile o1 = (TestFile) o;
+			new DebugAutotestInIntelliJ().debugInIDEA(project, o1);
 		}
 	}
 
 	private TestFile getTestFileAtPoint(Point point) {
 		int index = list.locationToIndex(point);
 		return (TestFile) model.get(index);
+	}
+
+	private class JumpToSourceListener extends KeyAdapter {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			final int keyCode = e.getKeyCode();
+			if (keyCode == KeyEvent.VK_F4) {
+				jumpToSource();
+			}
+		}
+	}
+
+	private class DeleteListener extends KeyAdapter {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			final int keyCode = e.getKeyCode();
+			if (keyCode == KeyEvent.VK_DELETE) {
+				delete();
+			}
+		}
+
+	}
+
+	private class EnterListener extends KeyAdapter {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			final int keyCode = e.getKeyCode();
+			if (keyCode == KeyEvent.VK_ENTER) {
+				run();
+			}
+		}
+	}
+
+	private class DoubleClickListener extends MouseAdapter {
+
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2) {
+				TestFile o = getTestFileAtPoint(e.getPoint());
+				new RunAutotestInIntelliJ().runInIDEA(project, o);
+			}
+		}
 	}
 
 	private class DeleteAction extends DumbAwareAction {
@@ -189,6 +230,18 @@ public class AutotestPanel implements Disposable {
 		}
 	}
 
+	private class DebugAction extends DumbAwareAction {
+
+		public DebugAction() {
+			super("Debug");
+		}
+
+		@Override
+		public void actionPerformed(@NotNull AnActionEvent e) {
+			debug();
+		}
+	}
+
 	private class RunOnAction extends DumbAwareAction {
 
 		public RunOnAction() {
@@ -211,6 +264,24 @@ public class AutotestPanel implements Disposable {
 				}
 
 			}
+		}
+	}
+
+	private class JumpToSourceAction extends DumbAwareAction {
+
+		public JumpToSourceAction() {
+			super("Jump to source (F4)");
+		}
+
+		@Override
+		public void actionPerformed(@NotNull AnActionEvent e) {
+			jumpToSource();
+		}
+
+		@Override
+		public void update(@NotNull AnActionEvent e) {
+			super.update(e);
+			e.getPresentation().setVisible(list.getSelectedValues().length == 1);
 		}
 	}
 }

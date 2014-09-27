@@ -9,6 +9,11 @@ public class AutotestUtils {
 		return path.substring(i + "/testscripts/".length(), path.length());
 	}
 
+	public static String getFileName(String path) {
+		int i = path.lastIndexOf("/");
+		return path.substring(i + 1, path.length());
+	}
+
 	public static String getTestFileRelativePath(VirtualFile virtualFile) {
 		return getTestFileRelativePath(virtualFile.getPath());
 	}

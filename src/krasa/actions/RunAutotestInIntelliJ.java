@@ -2,7 +2,7 @@ package krasa.actions;
 
 import krasa.model.*;
 
-import com.intellij.execution.ExecutionException;
+import com.intellij.execution.*;
 import com.intellij.execution.application.*;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.*;
@@ -25,6 +25,10 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	public void actionPerformed(AnActionEvent e) {
 		TestFile element = getTestFile(e);
 		AutotestState.getInstance().addTestFile(element);
+		execute(e, element);
+	}
+
+	protected void execute(AnActionEvent e, TestFile element) {
 		runInIDEA(e.getProject(), element);
 	}
 
@@ -40,10 +44,15 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	public void runInIDEA(Project project, TestFile element) {
 		ApplicationConfiguration applicationConfiguration = getApplicationConfiguration(project, element);
 		try {
-			ExecutionEnvironmentBuilder executionEnvironmentBuilder = ExecutionEnvironmentBuilder.create(project,
-					DefaultRunExecutor.getRunExecutorInstance(), applicationConfiguration);
+
+			Executor runExecutorInstance = DefaultRunExecutor.getRunExecutorInstance();
+			final ProgramRunner runner = RunnerRegistry.getInstance().getRunner(DefaultRunExecutor.EXECUTOR_ID,
+					applicationConfiguration);
+			ExecutionEnvironmentBuilder executionEnvironmentBuilder = new ExecutionEnvironmentBuilder(project,
+					runExecutorInstance).setRunnerId(runExecutorInstance.getId()).setRunProfile(
+					applicationConfiguration);
 			ExecutionEnvironment build = executionEnvironmentBuilder.build();
-			build.getRunner().execute(build);
+			runner.execute(build);
 			// RunManagerEx.getInstanceEx(project).addConfiguration((RunnerAndConfigurationSettings)
 			// build.getConfigurationSettings(), true);
 		} catch (ExecutionException ex) {

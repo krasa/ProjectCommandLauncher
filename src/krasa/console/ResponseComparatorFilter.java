@@ -10,7 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diff.*;
 import com.intellij.openapi.diff.ex.DiffContentFactory;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -19,9 +19,9 @@ import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.awt.RelativePoint;
 
-public class RequestComparatorFilter implements Filter {
+public class ResponseComparatorFilter implements Filter {
 
-	public static final String REQUEST_DOES_NOT_MATCH_EXPECTED_CONTENT_FOR = "Request does not match expected content for";
+	public static final String prefix = "Response does not match file: ";
 
 	Data data;
 
@@ -31,17 +31,16 @@ public class RequestComparatorFilter implements Filter {
 		if (line == null) {
 			return null;
 		}
-		if (line.substring(0, Math.min(line.length(), 100)).contains("RequestComparator")) {
-			int path = line.indexOf(REQUEST_DOES_NOT_MATCH_EXPECTED_CONTENT_FOR);
+		if (line.substring(0, Math.min(line.length(), 100)).contains("AssertEqualResponseBuilder")) {
+			int path = line.indexOf(prefix);
 			int actual = actualIndex(line);
 			if (path > 0) {
 				data = new Data();
-				data.path = line.substring(path + REQUEST_DOES_NOT_MATCH_EXPECTED_CONTENT_FOR.length()).trim();
-				data.hyperlinkInfoBase = new MyHyperlinkInfoBase(data);
+				data.path = line.substring(path + prefix.length()).trim();
+				return new Result(entireLength - line.length() + path, entireLength, new GoToFile(data.path));
 			} else if (actual > 0 && data != null) {
-				String substring = line.substring(actual + "Actual: ".length());
-				data.actual = substring.trim();
-				Result result = new Result(entireLength - line.length(), entireLength, data.hyperlinkInfoBase);
+				data.actual = line.substring(actual + "Actual: ".length()).trim();
+				Result result = new Result(entireLength - line.length(), entireLength, new DiffFile(data));
 				data = null;
 				return result;
 			}
@@ -57,18 +56,32 @@ public class RequestComparatorFilter implements Filter {
 		return i;
 	}
 
-	private static class MyHyperlinkInfoBase extends HyperlinkInfoBase {
+	private class GoToFile implements HyperlinkInfo {
+
+		private String path;
+
+		public GoToFile(String path) {
+			this.path = path;
+		}
+
+		@Override
+		public void navigate(Project project) {
+			new OpenFileDescriptor(project, findFile(project, path)).navigate(true);
+		}
+	}
+
+	private class DiffFile extends HyperlinkInfoBase {
 
 		private Data data;
 
-		public MyHyperlinkInfoBase(Data data) {
+		public DiffFile(Data data) {
 			this.data = data;
 		}
 
 		@Override
 		public void navigate(@NotNull final Project project,
 				@Nullable RelativePoint hyperlinkLocationPoint) {
-			VirtualFile expected = findFile(project);
+			VirtualFile expected = findFile(project, data.path);
 
 			if (expected == null) {
 				ConsoleFilterProvider.notificationGroup.createNotification(
@@ -76,9 +89,9 @@ public class RequestComparatorFilter implements Filter {
 				return;
 			}
 
-			final String actual = data.actual;
-			String text = FormatUtils.reformat(project, actual);
-			VirtualFile actualVF = new LightVirtualFile("Actual", XMLLanguage.INSTANCE, text);
+			String reformat = FormatUtils.reformat(project, data.actual);
+
+			VirtualFile actualVF = new LightVirtualFile("Actual", XMLLanguage.INSTANCE, reformat);
 
 			SimpleDiffRequest diffData = DiffContentFactory.compareVirtualFiles(project, actualVF, expected, data.path);
 			// noinspection ConstantConditions
@@ -98,42 +111,41 @@ public class RequestComparatorFilter implements Filter {
 			DiffManager.getInstance().getDiffTool().show(diffData);
 		}
 
-		private VirtualFile findFile(Project project) {
-			VirtualFile file = null;
-			PsiShortNamesCache instance = PsiShortNamesCache.getInstance(project);
-			String fileName = AutotestUtils.getFileName(data.path);
-			PsiFile[] filesByName = getFilesByName(instance, fileName);
-			String expectedPath = data.path;
-			if (!expectedPath.startsWith("/")) {
-				expectedPath = "/" + expectedPath;
-			}
-			for (PsiFile psiFile : filesByName) {
-				VirtualFile virtualFile = psiFile.getVirtualFile();
-				String path = virtualFile.getPath();
-				if (path.contains(expectedPath) && path.contains("dummy-requests")) {
-					file = virtualFile;
-				}
-			}
-			return file;
-		}
+	}
 
-		private PsiFile[] getFilesByName(PsiShortNamesCache instance, String fileName) {
-			PsiFile[] filesByName = instance.getFilesByName(fileName);
-			if (filesByName.length == 0) {
-				filesByName = instance.getFilesByName(fileName + ".xml");
-			}
-			if (filesByName.length == 0) {
-				filesByName = instance.getFilesByName(fileName + ".json");
-			}
-			return filesByName;
+	private VirtualFile findFile(Project project, String path1) {
+		VirtualFile file = null;
+		PsiShortNamesCache instance = PsiShortNamesCache.getInstance(project);
+		String fileName = AutotestUtils.getFileName(path1);
+		PsiFile[] filesByName = getFilesByName(instance, fileName);
+		if (!path1.startsWith("/")) {
+			path1 = "/" + path1;
 		}
+		for (PsiFile psiFile : filesByName) {
+			VirtualFile virtualFile = psiFile.getVirtualFile();
+			String path = virtualFile.getPath();
+			if (path.contains(path1)) {
+				file = virtualFile;
+			}
+		}
+		return file;
+	}
+
+	private PsiFile[] getFilesByName(PsiShortNamesCache instance, String fileName) {
+		PsiFile[] filesByName = instance.getFilesByName(fileName);
+		if (filesByName.length == 0) {
+			filesByName = instance.getFilesByName(fileName + ".xml");
+		}
+		if (filesByName.length == 0) {
+			filesByName = instance.getFilesByName(fileName + ".json");
+		}
+		return filesByName;
 	}
 
 	private static class Data {
 
 		String path;
 		String actual;
-		HyperlinkInfoBase hyperlinkInfoBase;
 
 		@Override
 		public String toString() {

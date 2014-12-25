@@ -1,10 +1,10 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
-		"http://plugins.intellij.net/plugin.dtd">
+	"http://plugins.intellij.net/plugin.dtd">
 <idea-plugin version="2">
 
 	<name>ProjectCommandLauncher</name>
 	<id>ProjectCommandLauncher</id>
-	<version>1.6</version>
+	<version>2.8</version>
 
 	<description><![CDATA[
 
@@ -15,40 +15,50 @@
 
 	<vendor email="vojta.krasa@gmail.com">Vojtech Krasa</vendor>
 
-	<idea-version since-build="138.000" until-build=""/>
+	<idea-version since-build="135.000" until-build="" />
 
 	<change-notes><![CDATA[
 
-			]]></change-notes>
+	]]></change-notes>
 
 
 	<actions>
-		<action id="RunAutotestWithDialog" class="krasa.actions.RunAutotestWithDialog" text="RunAutotestWithDialog"
-			description="RunAutotestWithDialog">
-			<add-to-group group-id="EditorPopupMenu" anchor="last"/>
-		</action>
-		<action id="RunAutotest" class="krasa.actions.RunAutotest" text="RunAutotest" description="RunAutotest">
-			<add-to-group group-id="EditorPopupMenu" anchor="last"/>
-		</action>
-
+		<!--<action id="RunAutotestWithDialog" class="krasa.actions.RunAutotestWithDialog" text="RunAutotestWithDialog"-->
+		<!--description="RunAutotestWithDialog">-->
+		<!--<add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+		<!--</action>-->
+		<!--<action id="RunAutotest" class="krasa.actions.RunAutotest" text="RunAutotest" description="RunAutotest">-->
+		<!--<add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+		<!--</action>-->
 
 		<action id="DebugAutotestInIntelliJ" class="krasa.actions.DebugAutotestInIntelliJ"
-				text="Debug Autotest In IntelliJ" description="Debug Autotest In IntelliJ">
-			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
+			text="Debug Autotest In IntelliJ" description="Debug Autotest In IntelliJ">
+			<add-to-group group-id="EditorPopupMenu" anchor="first" />
 		</action>
-		<action id="RunAutotestInIntelliJWithDialog" class="krasa.actions.RunAutotestInIntelliJWithDialog" text="Run Autotest In IntelliJ with Dialog" description="Run Autotest In IntelliJ with Dialog">
-			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
+		<action id="RunAutotestInIntelliJWithDialog" class="krasa.actions.RunAutotestInIntelliJWithDialog"
+			text="Run Autotest In IntelliJ with Dialog" description="Run Autotest In IntelliJ with Dialog">
+			<add-to-group group-id="EditorPopupMenu" anchor="first" />
 		</action>
-		<action id="RunAutotestInIntelliJ" class="krasa.actions.RunAutotestInIntelliJ" text="Run Autotest In IntelliJ" description="Run Autotest In IntelliJ">
-			<add-to-group group-id="EditorPopupMenu" anchor="first"/>
+		<action id="RunAutotestInIntelliJ" class="krasa.actions.RunAutotestInIntelliJ" text="Run Autotest In IntelliJ"
+			description="Run Autotest In IntelliJ">
+			<add-to-group group-id="EditorPopupMenu" anchor="first" />
 		</action>
 		<action id="ConvertEncodingUnsafeAction" class="krasa.actions.ConvertEncodingUnsafeAction"
-				text="Convert Encoding" description="Convert Encoding">
-			<add-to-group group-id="EditorPopupMenu" anchor="last"/>
+			text="Convert Encoding" description="Convert Encoding">
+			<add-to-group group-id="EditorPopupMenu" anchor="last" />
 		</action>
 	</actions>
 
 	<extensions defaultExtensionNs="com.intellij">
+		<localInspection language="JAVA" shortName="AssertResponseEqualBuilder"
+			displayName="Use AssertResponseEqualBuilder"
+			groupName="krasa"
+			enabledByDefault="true" level="WARNING"
+			implementationClass="krasa.inspections.UseAssertResponseEqualBuilderTestInspection" />
+
+
+		<consoleFilterProvider order="first" implementation="krasa.console.ConsoleFilterProvider" />
+
 
 		<toolWindow anchor="right" icon="AllIcons.Providers.Oracle" id="Autotest"
 			factoryClass="krasa.toolwindow.AutotestToolWindowFactory" />

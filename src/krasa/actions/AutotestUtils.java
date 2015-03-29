@@ -17,4 +17,8 @@ public class AutotestUtils {
 	public static String getTestFileRelativePath(VirtualFile virtualFile) {
 		return getTestFileRelativePath(virtualFile.getPath());
 	}
+
+	public static String getTestFileFullPath(VirtualFile virtualFile) {
+		return virtualFile.getPath();
+	}
 }

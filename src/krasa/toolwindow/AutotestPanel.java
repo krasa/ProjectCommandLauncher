@@ -255,7 +255,7 @@ public class AutotestPanel implements Disposable {
 				Set<TestFile> testFileList = new HashSet<TestFile>();
 				for (Object o : list.getSelectedValues()) {
 					TestFile o1 = (TestFile) o;
-					TestFile element = new TestFile(environment, o1.getName(), o1.getPath());
+					TestFile element = new TestFile(environment, o1.getName(), o1.getPath(), o1.getFullPath());
 					if (!testFileList.contains(element)) {
 						testFileList.add(element);
 						AutotestState.getInstance().addTestFile(element);

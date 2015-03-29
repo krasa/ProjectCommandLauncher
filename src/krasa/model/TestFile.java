@@ -5,14 +5,16 @@ public class TestFile {
 	private String enviroment;
 	private String name;
 	private String path;
+	private String fullPath;
 
 	public TestFile() {
 	}
 
-	public TestFile(String enviroment, String name, String path) {
+	public TestFile(String enviroment, String name, String path, String fullPath) {
 		this.enviroment = enviroment;
 		this.name = name;
 		this.path = path;
+		this.fullPath = fullPath;
 	}
 
 	public String getName() {
@@ -34,6 +36,9 @@ public class TestFile {
 	public String getPath() {
 		return path;
 	}
+	public String getFullPath() {
+		return fullPath;
+	}
 
 	public void setPath(String path) {
 		this.path = path;
@@ -45,6 +50,7 @@ public class TestFile {
 		sb.append("enviroment='").append(enviroment).append('\'');
 		sb.append(", name='").append(name).append('\'');
 		sb.append(", path='").append(path).append('\'');
+		sb.append(", fullPath='").append(fullPath).append('\'');
 		sb.append('}');
 		return sb.toString();
 	}

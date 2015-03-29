@@ -9,11 +9,11 @@ import com.intellij.execution.runners.*;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.*;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 
 /**
  * @author Vojtech Krasa
@@ -38,7 +38,7 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 
 	protected TestFile getTestFile(AnActionEvent e) {
 		String name = PlatformDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName();
-		return new TestFile(getEnvironment(), name, getTestFilePath(e));
+		return new TestFile(getEnvironment(), name, getTestFilePath(e), getTestFileFullPath(e));
 	}
 
 	public void runInIDEA(Project project, TestFile element) {
@@ -60,22 +60,53 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 		}
 	}
 
-	protected ApplicationConfiguration getApplicationConfiguration(Project project, TestFile element) {
-		VirtualFile baseDir = project.getBaseDir();
-		ApplicationConfiguration applicationConfiguration = new ApplicationConfiguration(
-				String.valueOf(element.getName()), project, ApplicationConfigurationType.getInstance());
-		applicationConfiguration.setMainClassName("com.tmobile.utils.autotesting.control.MainIntellij");
-		applicationConfiguration.setWorkingDirectory(baseDir.getPath() + "/tool/xmlbasedtests");
-		applicationConfiguration.setVMParameters("-Dsystem.code=" + element.getEnviroment() + " -Dfile="
-				+ element.getPath());
-		Module module = ModuleManager.getInstance(project).getModules()[0];
-		applicationConfiguration.setModule(module);
-		return applicationConfiguration;
+	protected ApplicationConfiguration getApplicationConfiguration(Project project, TestFile testFile) {
+		ApplicationConfiguration ac = new ApplicationConfiguration(testFile.getName(), project,
+				ApplicationConfigurationType.getInstance());
+
+		ac.setMainClassName("com.tmobile.utils.autotesting.control.MainIntellij");
+		ac.setWorkingDirectory(getWorkingDirectory(project, testFile));
+		ac.setVMParameters("-Dsystem.code=" + testFile.getEnviroment() + " -Dfile=" + testFile.getPath());
+		ac.setModule(getModule(project, testFile));
+
+		return ac;
+	}
+
+	protected String getWorkingDirectory(Project project, TestFile testFile) {
+		final String testFileFullPath = testFile.getFullPath();
+		if (testFileFullPath == null) {
+			// backward compatibility
+			VirtualFile baseDir = project.getBaseDir();
+			return baseDir.getPath() + "/tool/xmlbasedtests";
+		}
+
+		String workingDirectory = null;
+		if (testFileFullPath.contains("tool/xmlbasedtests")) {
+			workingDirectory = testFileFullPath.substring(0, testFileFullPath.indexOf("tool/xmlbasedtests")
+					+ "tool/xmlbasedtests".length());
+		}
+		return workingDirectory;
+	}
+
+	private Module getModule(Project project, TestFile element) {
+		final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+		String fullPath = element.getFullPath();
+		if (fullPath == null) {
+			// backward compatibility
+			return ModuleManager.getInstance(project).getModules()[0];
+		}
+		VirtualFile fileByUrl = VirtualFileManager.getInstance().findFileByUrl("file://" + fullPath);
+		return projectFileIndex.getModuleForFile(fileByUrl);
 	}
 
 	private String getTestFilePath(AnActionEvent e) {
 		VirtualFile virtualFile = PlatformDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
 		return AutotestUtils.getTestFileRelativePath(virtualFile);
+	}
+
+	private String getTestFileFullPath(AnActionEvent e) {
+		VirtualFile virtualFile = PlatformDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+		return AutotestUtils.getTestFileFullPath(virtualFile);
 	}
 
 	@Override
@@ -86,14 +117,19 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 
 	private void determineVisibility(AnActionEvent e) {
 		DataContext dataContext = e.getDataContext();
-		VirtualFile data1 = PlatformDataKeys.VIRTUAL_FILE.getData(dataContext);
-		FileType fileType = null;
-		if (data1 != null) {
-			fileType = data1.getFileType();
+		VirtualFile virtualFile = PlatformDataKeys.VIRTUAL_FILE.getData(dataContext);
+		e.getPresentation().setVisible(isTestScript(virtualFile));
+	}
+
+	private boolean isTestScript(VirtualFile file) {
+		return isXml(file) && file.getPath().contains("tool/xmlbasedtests/testscripts");
+	}
+
+	private boolean isXml(VirtualFile file) {
+		if (file == null) {
+			return false;
 		}
-		if (fileType != null) {
-			e.getPresentation().setVisible(fileType.equals(XmlFileType.INSTANCE));
-		}
+		return XmlFileType.INSTANCE.equals(file.getFileType());
 	}
 
 }

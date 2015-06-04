@@ -1,18 +1,24 @@
 package krasa;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.execution.*;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.RunContentExecutor;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.project.*;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 
@@ -26,6 +32,10 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 	private static volatile boolean isDisplayed;
 
 	public void initComponent() {
+		if (MatyasUtils.isMatyas()) {
+			return;
+		}
+
 		initializeActions();
 	}
 

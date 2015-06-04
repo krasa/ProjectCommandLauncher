@@ -1,19 +1,31 @@
 package krasa.actions;
 
-import krasa.model.*;
+import krasa.model.AutotestState;
+import krasa.model.TestFile;
 
-import com.intellij.execution.*;
-import com.intellij.execution.application.*;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.Executor;
+import com.intellij.execution.RunnerRegistry;
+import com.intellij.execution.application.ApplicationConfiguration;
+import com.intellij.execution.application.ApplicationConfigurationType;
 import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.runners.*;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
+import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.*;
-import com.intellij.openapi.project.*;
-import com.intellij.openapi.roots.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 
 /**
  * @author Vojtech Krasa
@@ -61,9 +73,8 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	}
 
 	protected ApplicationConfiguration getApplicationConfiguration(Project project, TestFile testFile) {
-		ApplicationConfiguration ac = new ApplicationConfiguration(testFile.getName(), project,
+		ApplicationConfiguration ac = new ApplicationConfiguration(String.valueOf(testFile.getName()), project,
 				ApplicationConfigurationType.getInstance());
-
 		ac.setMainClassName("com.tmobile.utils.autotesting.control.MainIntellij");
 		ac.setWorkingDirectory(getWorkingDirectory(project, testFile));
 		ac.setVMParameters("-Dsystem.code=" + testFile.getEnviroment() + " -Dfile=" + testFile.getPath());
@@ -118,7 +129,11 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	private void determineVisibility(AnActionEvent e) {
 		DataContext dataContext = e.getDataContext();
 		VirtualFile virtualFile = PlatformDataKeys.VIRTUAL_FILE.getData(dataContext);
-		e.getPresentation().setVisible(isTestScript(virtualFile));
+		boolean visible = false;
+		if (isTestScript(virtualFile)) {
+			visible = true;
+		}
+		e.getPresentation().setVisible(visible);
 	}
 
 	private boolean isTestScript(VirtualFile file) {

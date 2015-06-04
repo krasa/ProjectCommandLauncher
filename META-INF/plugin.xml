@@ -1,66 +1,79 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"
-	"http://plugins.intellij.net/plugin.dtd">
+        "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin version="2">
 
-	<name>ProjectCommandLauncher</name>
-	<id>ProjectCommandLauncher</id>
-	<version>2.9</version>
+    <name>ProjectCommandLauncher</name>
+    <id>ProjectCommandLauncher</id>
+    <version>3.0</version>
 
-	<description><![CDATA[
+    <description><![CDATA[
 
 			]]>
-	</description>
+    </description>
 
-	<category>Editor</category>
+    <category>Editor</category>
 
-	<vendor email="vojta.krasa@gmail.com">Vojtech Krasa</vendor>
+    <vendor email="vojta.krasa@gmail.com">Vojtech Krasa</vendor>
 
-	<idea-version since-build="135.000" until-build="" />
+    <idea-version since-build="135.000"/>
 
-	<change-notes><![CDATA[
+    <change-notes><![CDATA[
 
 	]]></change-notes>
 
 
-	<actions>
-		<action id="DebugAutotestInIntelliJ" class="krasa.actions.DebugAutotestInIntelliJ"
-			text="Debug Autotest In IntelliJ" description="Debug Autotest In IntelliJ">
-			<add-to-group group-id="EditorPopupMenu" anchor="first" />
-		</action>
-		<action id="RunAutotestInIntelliJWithDialog" class="krasa.actions.RunAutotestInIntelliJWithDialog"
-			text="Run Autotest In IntelliJ with Dialog" description="Run Autotest In IntelliJ with Dialog">
-			<add-to-group group-id="EditorPopupMenu" anchor="first" />
-		</action>
-		<action id="RunAutotestInIntelliJ" class="krasa.actions.RunAutotestInIntelliJ" text="Run Autotest In IntelliJ"
-			description="Run Autotest In IntelliJ">
-			<add-to-group group-id="EditorPopupMenu" anchor="first" />
-		</action>
-		<action id="ConvertEncodingUnsafeAction" class="krasa.actions.ConvertEncodingUnsafeAction"
-			text="Convert Encoding" description="Convert Encoding">
-			<add-to-group group-id="EditorPopupMenu" anchor="last" />
-		</action>
-	</actions>
+    <actions>
+        <separator>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="first"/>
+        </separator>
+        <action id="DebugAutotestInIntelliJ" class="krasa.actions.DebugAutotestInIntelliJ"
+                icon="AllIcons.Toolwindows.ToolWindowDebugger"
+                text="&amp;Debug"
+                description="Debug">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="first"/>
+        </action>
+        <action id="RunAutotestInIntelliJWithDialog" class="krasa.actions.RunAutotestInIntelliJWithDialog"
+                text="Run A&amp;gainst…"
+                description="Run with Autotest Against…">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="first"/>
+            <keyboard-shortcut first-keystroke="control shift F11" keymap="$default"/>
+        </action>
+        <action id="RunAutotestInIntelliJ" class="krasa.actions.RunAutotestInIntelliJ"
+                icon="AllIcons.Toolwindows.ToolWindowRun"
+                text="R&amp;un"
+                description="Run with Autotest">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="first"/>
+            <keyboard-shortcut first-keystroke="control shift F10" keymap="$default"/>
+        </action>
+        <!--<action id="ConvertEncodingUnsafeAction" class="krasa.actions.ConvertEncodingUnsafeAction"-->
+        <!--text="Convert Encoding" description="Convert Encoding">-->
+        <!--<add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+        <!--</action>-->
+    </actions>
 
-	<extensions defaultExtensionNs="com.intellij">
-		<localInspection language="JAVA" shortName="AssertResponseEqualBuilder"
-			displayName="Use AssertResponseEqualBuilder"
-			groupName="krasa"
-			enabledByDefault="true" level="WARNING"
-			implementationClass="krasa.inspections.UseAssertResponseEqualBuilderTestInspection" />
+    <extensions defaultExtensionNs="com.intellij">
+        <localInspection language="JAVA" shortName="AssertResponseEqualBuilder"
+                         displayName="Use AssertResponseEqualBuilder"
+                         groupName="krasa"
+                         enabledByDefault="true" level="WARNING"
+                         implementationClass="krasa.inspections.UseAssertResponseEqualBuilderTestInspection"/>
+
+        <consoleFilterProvider order="first" implementation="krasa.console.ConsoleFilterProvider"/>
 
 
-		<consoleFilterProvider order="first" implementation="krasa.console.ConsoleFilterProvider" />
+        <toolWindow anchor="right" icon="AllIcons.RunConfigurations.Junit" id="Autotest"
+                    factoryClass="krasa.toolwindow.AutotestToolWindowFactory"/>
 
-
-		<toolWindow anchor="right" icon="AllIcons.Providers.Oracle" id="Autotest"
-			factoryClass="krasa.toolwindow.AutotestToolWindowFactory" />
-
-		<applicationService serviceInterface="krasa.model.AutotestState"
-			serviceImplementation="krasa.model.AutotestState" />
-	</extensions>
-	<application-components>
-		<component>
-			<implementation-class>krasa.ProjectCommandLauncherComponent</implementation-class>
-		</component>
-	</application-components>
+        <applicationService serviceInterface="krasa.model.AutotestState"
+                            serviceImplementation="krasa.model.AutotestState"/>
+    </extensions>
+    <application-components>
+        <component>
+            <implementation-class>krasa.ProjectCommandLauncherComponent</implementation-class>
+        </component>
+    </application-components>
 </idea-plugin>

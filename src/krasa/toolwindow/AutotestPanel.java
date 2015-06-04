@@ -3,22 +3,38 @@ package krasa.toolwindow;
 import static krasa.actions.AutotestUtils.getTestFileRelativePath;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.*;
 
-import krasa.actions.*;
-import krasa.model.*;
+import krasa.actions.DebugAutotestInIntelliJ;
+import krasa.actions.DialogUtils;
+import krasa.actions.RunAutotestInIntelliJ;
+import krasa.model.AutotestState;
+import krasa.model.TestFile;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import com.intellij.notification.*;
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.CopyProvider;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.project.*;
+import com.intellij.openapi.ide.CopyPasteManager;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.ui.PopupHandler;
@@ -45,6 +61,30 @@ public class AutotestPanel implements Disposable {
 		AutotestState.getInstance().addListener(settingsChangedListener);
 	}
 
+	private final CopyProvider myCopyProvider = new CopyProvider() {
+
+		@Override
+		public void performCopy(@NotNull DataContext dataContext) {
+			final TestFile value = (TestFile) list.getSelectedValue();
+			CopyPasteManager.getInstance().setContents(
+					new StringSelection(String.valueOf(value.getName() + " " + value.getEnviroment())));
+		}
+
+		@Override
+		public boolean isCopyEnabled(@NotNull DataContext dataContext) {
+			return list.getSelectedValue() != null;
+		}
+
+		@Override
+		public boolean isCopyVisible(@NotNull DataContext dataContext) {
+			return false;
+		}
+	};
+
+	public CopyProvider getCopyProvider() {
+		return myCopyProvider;
+	}
+
 	public JPanel getRoot() {
 		return root;
 	}
@@ -66,8 +106,8 @@ public class AutotestPanel implements Disposable {
 						@NotNull
 						@Override
 						public AnAction[] getChildren(@Nullable AnActionEvent e) {
-							return new AnAction[] { new JumpToSourceAction(), new RunAction(), new RunOnAction(),
-									new DebugAction(), new DeleteAction() };
+							return new AnAction[] { new RunAction(), new RunOnAction(), new DebugAction(),
+									new Separator(), new DeleteAction(), new JumpToSourceAction() };
 						}
 					}).getComponent().show(comp, x, y);
 				}
@@ -84,7 +124,10 @@ public class AutotestPanel implements Disposable {
 					boolean cellHasFocus) {
 				final Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				TestFile goal = (TestFile) value;
-				setText(goal.getEnviroment().replace("prgen", "p") + " - " + goal.getName());
+				String env = goal.getEnviroment();
+				env = env.replace("prgen", "p");
+				env = env.replace("tmdev-localhost", "localhost");
+				setText("[" + env + "] " + goal.getName());
 				return comp;
 			}
 		});
@@ -209,7 +252,7 @@ public class AutotestPanel implements Disposable {
 	private class DeleteAction extends DumbAwareAction {
 
 		public DeleteAction() {
-			super("Delete");
+			super("Delete (Del)");
 		}
 
 		@Override
@@ -221,7 +264,7 @@ public class AutotestPanel implements Disposable {
 	private class RunAction extends DumbAwareAction {
 
 		public RunAction() {
-			super("Run");
+			super("Run", null, AllIcons.Toolwindows.ToolWindowRun);
 		}
 
 		@Override
@@ -233,7 +276,7 @@ public class AutotestPanel implements Disposable {
 	private class DebugAction extends DumbAwareAction {
 
 		public DebugAction() {
-			super("Debug");
+			super("Debug", null, AllIcons.Toolwindows.ToolWindowDebugger);
 		}
 
 		@Override
@@ -245,7 +288,7 @@ public class AutotestPanel implements Disposable {
 	private class RunOnAction extends DumbAwareAction {
 
 		public RunOnAction() {
-			super("Run on...");
+			super("Run Against...");
 		}
 
 		@Override
@@ -270,7 +313,7 @@ public class AutotestPanel implements Disposable {
 	private class JumpToSourceAction extends DumbAwareAction {
 
 		public JumpToSourceAction() {
-			super("Jump to source (F4)");
+			super("Jump to Source (F4)");
 		}
 
 		@Override

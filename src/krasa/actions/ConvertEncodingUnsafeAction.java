@@ -5,18 +5,31 @@ import java.nio.charset.Charset;
 
 import javax.swing.*;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.application.*;
-import com.intellij.openapi.command.*;
-import com.intellij.openapi.command.undo.*;
-import com.intellij.openapi.editor.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.command.UndoConfirmationPolicy;
+import com.intellij.openapi.command.undo.GlobalUndoableAction;
+import com.intellij.openapi.command.undo.UndoManager;
+import com.intellij.openapi.command.undo.UndoableAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.*;
-import com.intellij.openapi.ui.popup.*;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.encoding.*;
+import com.intellij.openapi.vfs.encoding.ChooseFileEncodingAction;
+import com.intellij.openapi.vfs.encoding.EncodingUtil;
 import com.intellij.util.Function;
 
 public class ConvertEncodingUnsafeAction extends DumbAwareAction {

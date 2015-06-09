@@ -1,31 +1,26 @@
 package krasa;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.RunContentExecutor;
+import com.intellij.execution.*;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.module.*;
+import com.intellij.openapi.project.*;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * @author Vojtech Krasa
  */
-public class ProjectCommandLauncherComponent implements ApplicationComponent {
+public class PortalApplicationComponent implements ApplicationComponent {
 
 	public static final String CLEAN_UTIL_PORTAL = "clean, util, portal";
 	public static final Icon ICON = IconLoader.getIcon("/actions/uninstall.png");
@@ -103,12 +98,26 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 	}
 
 	private void run(AnActionEvent e, Process process, String... strings) {
-		VirtualFile baseDir = e.getProject().getBaseDir();
+		String baseDir = getBaseDir(e);
 		List<String> commands = new ArrayList<String>();
-		commands.add(getDrive(baseDir.getPath()));
+		commands.add(getDrive(baseDir));
 		commands.add(getScriptsDir(baseDir));
 		commands.addAll(Arrays.asList(strings));
 		writeCommands(process, commands);
+	}
+
+	@NotNull
+	private String getBaseDir(AnActionEvent e) {
+		Project project = e.getProject();
+		Module[] modules = ModuleManager.getInstance(project).getModules();
+		for (Module module : modules) {
+			if (module.getName().toUpperCase().startsWith("PORTAL")) {
+				VirtualFile moduleFile = module.getModuleFile();
+				VirtualFile baseDir = moduleFile.getParent();
+				return baseDir.getPath();
+			}
+		}
+		throw new RuntimeException("portal module not found");
 	}
 
 	private String getDrive(String path) {
@@ -146,8 +155,8 @@ public class ProjectCommandLauncherComponent implements ApplicationComponent {
 		printWriter.flush();
 	}
 
-	private String getScriptsDir(VirtualFile baseDir) {
-		return "cd " + baseDir.getPath().replaceAll("[/]", "\\\\") + "\\sdp\\scripts";
+	private String getScriptsDir(String path) {
+		return "cd " + path.replaceAll("[/]", "\\\\") + "\\sdp\\scripts";
 	}
 
 	public void disposeComponent() {

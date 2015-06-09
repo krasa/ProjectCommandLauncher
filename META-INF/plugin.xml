@@ -4,7 +4,7 @@
 
     <name>ProjectCommandLauncher</name>
     <id>ProjectCommandLauncher</id>
-    <version>3.0</version>
+	<version>3.1</version>
 
     <description><![CDATA[
 
@@ -73,7 +73,7 @@
     </extensions>
     <application-components>
         <component>
-            <implementation-class>krasa.ProjectCommandLauncherComponent</implementation-class>
+			<implementation-class>krasa.PortalApplicationComponent</implementation-class>
         </component>
     </application-components>
 </idea-plugin>

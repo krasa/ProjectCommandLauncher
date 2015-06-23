@@ -1,31 +1,19 @@
 package krasa.actions;
 
-import krasa.model.AutotestState;
-import krasa.model.TestFile;
+import krasa.model.*;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.Executor;
-import com.intellij.execution.RunnerRegistry;
-import com.intellij.execution.application.ApplicationConfiguration;
-import com.intellij.execution.application.ApplicationConfigurationType;
+import com.intellij.execution.*;
+import com.intellij.execution.application.*;
 import com.intellij.execution.executors.DefaultRunExecutor;
-import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
-import com.intellij.execution.runners.ProgramRunner;
+import com.intellij.execution.runners.*;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.module.*;
+import com.intellij.openapi.project.*;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.*;
 
 /**
  * @author Vojtech Krasa
@@ -61,8 +49,7 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 			final ProgramRunner runner = RunnerRegistry.getInstance().getRunner(DefaultRunExecutor.EXECUTOR_ID,
 					applicationConfiguration);
 			ExecutionEnvironmentBuilder executionEnvironmentBuilder = new ExecutionEnvironmentBuilder(project,
-					runExecutorInstance).setRunnerId(runExecutorInstance.getId()).setRunProfile(
-					applicationConfiguration);
+					runExecutorInstance).runner(runner).runProfile(applicationConfiguration);
 			ExecutionEnvironment build = executionEnvironmentBuilder.build();
 			runner.execute(build);
 			// RunManagerEx.getInstanceEx(project).addConfiguration((RunnerAndConfigurationSettings)
@@ -123,18 +110,16 @@ public class RunAutotestInIntelliJ extends DumbAwareAction {
 	@Override
 	public void update(AnActionEvent e) {
 		super.update(e);
-		determineVisibility(e);
-	}
-
-	private void determineVisibility(AnActionEvent e) {
 		DataContext dataContext = e.getDataContext();
 		VirtualFile virtualFile = PlatformDataKeys.VIRTUAL_FILE.getData(dataContext);
 		boolean visible = false;
 		if (isTestScript(virtualFile)) {
 			visible = true;
 		}
+		e.getPresentation().setEnabled(visible);
 		e.getPresentation().setVisible(visible);
 	}
+
 
 	private boolean isTestScript(VirtualFile file) {
 		return isXml(file) && file.getPath().contains("tool/xmlbasedtests/testscripts");

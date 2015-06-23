@@ -30,8 +30,8 @@ public class DebugAutotestInIntelliJ extends RunAutotestInIntelliJ {
 					applicationConfiguration);
 			ExecutionEnvironmentBuilder executionEnvironmentBuilder = new ExecutionEnvironmentBuilder(project,
 					runExecutorInstance)
-				.setRunnerId(runExecutorInstance.getId())
-				.setRunProfile(applicationConfiguration);
+				.runner(runner)
+				.runProfile(applicationConfiguration);
 			ExecutionEnvironment build = executionEnvironmentBuilder.build();
 			runner.execute(build);
 

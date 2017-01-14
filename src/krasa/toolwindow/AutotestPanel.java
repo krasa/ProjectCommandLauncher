@@ -14,12 +14,7 @@ import java.util.Set;
 
 import javax.swing.*;
 
-import krasa.actions.DebugAutotestInIntelliJ;
-import krasa.actions.DialogUtils;
-import krasa.actions.RunAutotestInIntelliJ;
-import krasa.model.AutotestState;
-import krasa.model.TestFile;
-
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,10 +30,17 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.pom.Navigatable;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBList;
+
+import krasa.actions.DebugAutotestInIntelliJ;
+import krasa.actions.DialogUtils;
+import krasa.actions.RunAutotestInIntelliJ;
+import krasa.model.AutotestState;
+import krasa.model.TestFile;
 
 public class AutotestPanel implements Disposable {
 
@@ -136,7 +138,34 @@ public class AutotestPanel implements Disposable {
 		jbList.addKeyListener(new EnterListener());
 		jbList.addKeyListener(new DeleteListener());
 		jbList.addKeyListener(new JumpToSourceListener());
+		jbList.setDataProvider(new DataProvider() {
 
+			@Nullable
+			@Override
+			public Object getData(@NonNls String dataId) {
+				if (CommonDataKeys.NAVIGATABLE_ARRAY.is(dataId)) {
+					jumpToSource();
+					return new Navigatable[] { new Navigatable() {
+
+						@Override
+						public void navigate(boolean b) {
+							jumpToSource();
+						}
+
+						@Override
+						public boolean canNavigate() {
+							return true;
+						}
+
+						@Override
+						public boolean canNavigateToSource() {
+							return true;
+						}
+					} };
+				} else
+					return null;
+			}
+		});
 		return jbList;
 	}
 

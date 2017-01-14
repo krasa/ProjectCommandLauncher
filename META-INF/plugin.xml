@@ -56,11 +56,12 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <localInspection language="JAVA" shortName="AssertResponseEqualBuilder"
-                         displayName="Use AssertResponseEqualBuilder"
-                         groupName="krasa"
-                         enabledByDefault="true" level="WARNING"
-                         implementationClass="krasa.inspections.UseAssertResponseEqualBuilderTestInspection"/>
+        <psi.referenceContributor language="JAVA" implementation="krasa.languageSupport.TestFileReferenceContributor"/>
+        <!--<localInspection language="JAVA" shortName="AssertResponseEqualBuilder"-->
+        <!--displayName="Use AssertResponseEqualBuilder"-->
+        <!--groupName="krasa"-->
+        <!--enabledByDefault="true" level="WARNING"-->
+        <!--implementationClass="krasa.inspections.UseAssertResponseEqualBuilderTestInspection"/>-->
 
         <consoleFilterProvider order="first" implementation="krasa.console.ConsoleFilterProvider"/>
 

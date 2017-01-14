@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <option name="DEFAULT_COMPILER" value="Javac" />
-    <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="?*.properties" />
       <entry name="?*.xml" />
@@ -15,29 +13,30 @@
       <entry name="?*.tld" />
       <entry name="?*.ftl" />
     </wildcardResourcePatterns>
-    <annotationProcessing>
-      <profile default="true" name="Default" enabled="false">
-        <processorPath useClasspath="true" />
-      </profile>
-    </annotationProcessing>
   </component>
+  <component name="CopyrightManager" default="" />
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
   <component name="EclipseCodeFormatter">
     <option name="defaultSettings" value="true" />
     <option name="formatter" value="ECLIPSE" />
-    <option name="id" value="1340799126271" />
-    <option name="importOrderConfigFilePath" value="$USER_HOME$/My Documents/Downloads/org.eclipse.jdt.ui (1).prefs" />
+    <option name="id" value="1462535080417" />
+    <option name="importOrderConfigFilePath" value="$PROJECT_DIR$/../EclipseCodeFormatter4/test/resources/eclipse.importorder" />
     <option name="name" value="default" />
-    <option name="pathToConfigFileJava" value="$PROJECT_DIR$/../../_T-Mobile/format (1).xml" />
-    <option name="selectedJavaProfile" value="SDP" />
+    <option name="pathToConfigFileJava" value="$PROJECT_DIR$/../../../formatEclipse.xml" />
+    <option name="pathToEclipse" value="C:\Users\Meo\.p2\pool" />
+    <option name="selectedJavaProfile" value="ff" />
   </component>
   <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
     <file url="file://$PROJECT_DIR$/src/krasa/toolwindow/AutotestExplorer.java" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
   </component>
-  <component name="EntryPointsManager">
-    <entry_points version="2.0" />
+  <component name="InspectionProjectProfileManager">
+    <profile version="1.0">
+      <option name="myName" value="Project Default" />
+    </profile>
+    <version value="1.0" />
   </component>
   <component name="IntelliCalc">
     <mode value="0" />
@@ -174,6 +173,7 @@
     </group>
   </component>
   <component name="ProjectDictionaryState">
+    <dictionary name="krasav" />
     <dictionary name="KrasaV" />
   </component>
   <component name="ProjectModuleManager">
@@ -184,8 +184,19 @@
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="IDEA IU-138.1503.3" project-jdk-type="IDEA JDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="IntelliJ IDEA IU-171.1834.9" project-jdk-type="IDEA JDK">
     <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="PublishConfigData">
+    <serverData>
+      <paths name="aa">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
   </component>
   <component name="RegexUtilComponent" text="1900-01-01 2007/08/13 1900.01.01 1900 01 01 1900-01.01 1900 13 01 1900 02 31" flags="0" regex="(19|20)\d\d([- /.])(0[1-9]|1[012])\2(0[1-9]|[12][0-9]|3[01])" mode="0" />
   <component name="VcsDirectoryMappings">
@@ -203,4 +214,3 @@
     </library>
   </component>
 </project>
-

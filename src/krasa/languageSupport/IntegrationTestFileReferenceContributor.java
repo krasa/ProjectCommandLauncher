@@ -25,17 +25,18 @@ import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 
-public class TestFileReferenceContributor extends PsiReferenceContributor {
+public class IntegrationTestFileReferenceContributor extends PsiReferenceContributor {
 
 	private final boolean myEndingSlashNotAllowed = true;
+	static final VirtualFilePattern IN_IT = PsiJavaPatterns.virtualFile()
+			.withName(StandardPatterns.string().endsWith("IT.java"));
 
 	@Override
 	public void registerReferenceProviders(@NotNull PsiReferenceRegistrar psiReferenceRegistrar) {
-		VirtualFilePattern inIT = PsiJavaPatterns.virtualFile().withName(StandardPatterns.string().endsWith("IT.java"));
 		MyFilePathReferenceProvider provider = new MyFilePathReferenceProvider();
 
 		psiReferenceRegistrar.registerReferenceProvider(
-				PlatformPatterns.psiElement(PsiLiteralExpression.class).inVirtualFile(inIT), provider);
+				PlatformPatterns.psiElement(PsiLiteralExpression.class).inVirtualFile(IN_IT), provider);
 		// psiReferenceRegistrar.registerReferenceProvider(PlatformPatterns.psiElement(PsiReferenceExpression.class).inVirtualFile(inIT),
 		// provider, PsiReferenceRegistrar.HIGHER_PRIORITY);
 	}
@@ -127,10 +128,10 @@ public class TestFileReferenceContributor extends PsiReferenceContributor {
 
 				ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(thisModule);
 				Collection<PsiFileSystemItem> roots = getRoots(thisModule, true);
-
-				final PsiManager psiManager = PsiManager.getInstance(thisModule.getProject());
 				VirtualFile[] sourceRoots = moduleRootManager.orderEntries().recursively().withoutSdk()
 						.withoutLibraries().sources().usingCache().getRoots();
+
+				final PsiManager psiManager = PsiManager.getInstance(thisModule.getProject());
 				for (VirtualFile root : sourceRoots) {
 					final PsiDirectory directory = psiManager.findDirectory(root);
 					if (directory != null) {
@@ -180,39 +181,6 @@ public class TestFileReferenceContributor extends PsiReferenceContributor {
 
 			}
 
-			private String resolveFolderNameFromFluentCall(PsiMethodCallExpressionImpl parentOfType) {
-				String folderNameStr = null;
-				Collection<PsiMethodCallExpressionImpl> childrenOfAnyType = PsiTreeUtil.findChildrenOfType(parentOfType,
-						PsiMethodCallExpressionImpl.class);
-				for (PsiMethodCallExpressionImpl previousFluentMethod : childrenOfAnyType) {
-					if (previousFluentMethod != null) {
-						PsiMethod psiMethod = previousFluentMethod.resolveMethod();
-						if (psiMethod != null) {
-							if ("folderName".equals(psiMethod.getName()) || "expectCall".equals(psiMethod.getName())) {
-								PsiLiteralExpressionImpl folderNameExp = PsiTreeUtil
-										.findChildOfType(previousFluentMethod, PsiLiteralExpressionImpl.class);
-								if (folderNameExp != null) {
-									folderNameStr = folderNameExp.getInnerText();
-								}
-							} else if ("expectCallAndReturn".equals(psiMethod.getName())) {
-								PsiLiteralExpressionImpl folderNameExp = PsiTreeUtil
-										.findChildOfType(previousFluentMethod, PsiLiteralExpressionImpl.class);
-								if (folderNameExp != null) {
-									String innerText = folderNameExp.getInnerText();
-									if (innerText != null) {
-										String[] split = innerText.split("/");
-										if (split.length == 2) {
-											folderNameStr = split[0];
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				return folderNameStr;
-			}
-
 			@Override
 			public FileReference createFileReference(final TextRange range, final int index, final String text) {
 				// System.err.println(new StringBuilder().append(
@@ -227,4 +195,36 @@ public class TestFileReferenceContributor extends PsiReferenceContributor {
 		}
 	}
 
+	public static String resolveFolderNameFromFluentCall(PsiMethodCallExpressionImpl parentOfType) {
+		String folderNameStr = null;
+		Collection<PsiMethodCallExpressionImpl> childrenOfAnyType = PsiTreeUtil.findChildrenOfType(parentOfType,
+				PsiMethodCallExpressionImpl.class);
+		for (PsiMethodCallExpressionImpl previousFluentMethod : childrenOfAnyType) {
+			if (previousFluentMethod != null) {
+				PsiMethod psiMethod = previousFluentMethod.resolveMethod();
+				if (psiMethod != null) {
+					if ("folderName".equals(psiMethod.getName()) || "expectCall".equals(psiMethod.getName())) {
+						PsiLiteralExpressionImpl folderNameExp = PsiTreeUtil.findChildOfType(previousFluentMethod,
+								PsiLiteralExpressionImpl.class);
+						if (folderNameExp != null) {
+							folderNameStr = folderNameExp.getInnerText();
+						}
+					} else if ("expectCallAndReturn".equals(psiMethod.getName())) {
+						PsiLiteralExpressionImpl folderNameExp = PsiTreeUtil.findChildOfType(previousFluentMethod,
+								PsiLiteralExpressionImpl.class);
+						if (folderNameExp != null) {
+							String innerText = folderNameExp.getInnerText();
+							if (innerText != null) {
+								String[] split = innerText.split("/");
+								if (split.length == 2) {
+									folderNameStr = split[0];
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return folderNameStr;
+	}
 }

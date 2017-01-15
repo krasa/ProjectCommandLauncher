@@ -56,7 +56,10 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <psi.referenceContributor language="JAVA" implementation="krasa.languageSupport.TestFileReferenceContributor"/>
+		<psi.referenceContributor language="JAVA"
+								  implementation="krasa.languageSupport.IntegrationTestFileReferenceContributor"/>
+		<completion.contributor language="JAVA"
+								implementationClass="krasa.languageSupport.IntegrationTestCompletionContributor"/>
         <!--<localInspection language="JAVA" shortName="AssertResponseEqualBuilder"-->
         <!--displayName="Use AssertResponseEqualBuilder"-->
         <!--groupName="krasa"-->

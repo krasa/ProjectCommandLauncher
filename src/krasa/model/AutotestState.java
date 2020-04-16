@@ -1,15 +1,21 @@
 package krasa.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.intellij.openapi.components.*;
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 
-@State(name = "Autotest", storages = { @Storage(id = "Autotest", file = "$APP_CONFIG$/Autotest.xml") })
+@State(name = "Autotest", storages = { @Storage("Autotest.xml") })
 public class AutotestState implements PersistentStateComponent<AutotestState> {
 
 	private static final String TMDEV_LOCALHOST_DE = "tmdev-localhost-de";

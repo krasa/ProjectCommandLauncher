@@ -1,48 +1,56 @@
 package krasa;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.execution.*;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.RunContentExecutor;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.module.*;
-import com.intellij.openapi.project.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * @author Vojtech Krasa
  */
-public class PortalApplicationComponent implements ApplicationComponent {
+public class PortalShortcutStartupActivity implements StartupActivity {
 
 	public static final String CLEAN_UTIL_PORTAL = "clean, util, portal";
 	public static final Icon ICON = IconLoader.getIcon("/actions/uninstall.png");
-	private static volatile boolean isDisplayed;
+	private volatile boolean registered = false;
 
-	public void initComponent() {
-		if (MatyasUtils.isMatyas()) {
-			return;
+	@Override
+	public void runActivity(@NotNull Project project) {
+		if (!registered) {
+			registered = true;
+			if (MatyasUtils.isMatyas()) {
+				return;
+			}
+
+			initializeActions();
 		}
-
-		initializeActions();
 	}
 
 	private void initializeActions() {
 		DefaultActionGroup mainToolBar = (DefaultActionGroup) ActionManager.getInstance().getAction("BuildMenu");
-		if (!isDisplayed) {
-			isDisplayed = true;
-			mainToolBar.add(cleanUtilPortal());
-			mainToolBar.add(payment());
-			mainToolBar.add(portal());
-			mainToolBar.add(all());
-		}
+		mainToolBar.add(cleanUtilPortal());
+		mainToolBar.add(payment());
+		mainToolBar.add(portal());
+		mainToolBar.add(all());
 	}
 
 	private DumbAwareAction all() {
@@ -159,12 +167,4 @@ public class PortalApplicationComponent implements ApplicationComponent {
 		return "cd " + path.replaceAll("[/]", "\\\\") + "\\sdp\\scripts";
 	}
 
-	public void disposeComponent() {
-		// TODO: insert component disposal logic here
-	}
-
-	@NotNull
-	public String getComponentName() {
-		return "ProjectCommandLauncherComponent";
-	}
 }

@@ -4,7 +4,7 @@
 
     <name>ProjectCommandLauncher</name>
     <id>ProjectCommandLauncher</id>
-	<version>3.2</version>
+    <version>3.3</version>
 
     <description><![CDATA[
 
@@ -15,7 +15,7 @@
 
     <vendor email="vojta.krasa@gmail.com">Vojtech Krasa</vendor>
 
-    <idea-version since-build="135.000"/>
+    <idea-version since-build="190.000"/>
 
     <change-notes><![CDATA[
 
@@ -56,10 +56,12 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-		<psi.referenceContributor language="JAVA"
-								  implementation="krasa.languageSupport.IntegrationTestFileReferenceContributor"/>
-		<completion.contributor language="JAVA"
-								implementationClass="krasa.languageSupport.IntegrationTestCompletionContributor"/>
+        <postStartupActivity implementation="krasa.PortalShortcutStartupActivity"/>
+
+        <psi.referenceContributor language="JAVA"
+                                  implementation="krasa.languageSupport.IntegrationTestFileReferenceContributor"/>
+        <completion.contributor language="JAVA"
+                                implementationClass="krasa.languageSupport.IntegrationTestCompletionContributor"/>
         <!--<localInspection language="JAVA" shortName="AssertResponseEqualBuilder"-->
         <!--displayName="Use AssertResponseEqualBuilder"-->
         <!--groupName="krasa"-->
@@ -77,7 +79,7 @@
     </extensions>
     <application-components>
         <component>
-			<implementation-class>krasa.PortalApplicationComponent</implementation-class>
+            <implementation-class>krasa.PortalShortcutStartupActivity</implementation-class>
         </component>
     </application-components>
 </idea-plugin>
